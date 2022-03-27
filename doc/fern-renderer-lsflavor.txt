@@ -1,0 +1,94 @@
+*fern-renderer-lsflavor.txt*	A fern plugin to render with lsflavor
+
+==============================================================================
+INTRODUCTION
+
+*fern-renderer-lsflavor.vim* is a |fern.vim| renderer plugin with UNIX ls
+flavor, but it may be UNIX ls alternative's one. This plugin uses the
+configurations which are used by UNIX ls, because this is with ls flavor.
+
+==============================================================================
+FEATURES					*fern-renderer-lsflavor*
+
+Dereferenced symlink path~
+	Render the dereferenced filepath if a file is a symbolic link. This is
+	similar to a '-l' option of 'ls(1)' or the *netrw* view.
+
+	The format is like below.
+>
+	symlink_path -> dereferenced_path
+>
+Colorize filename~
+	Colorize a filename or a pathname. This plugin references an
+	environment variable "$LS_COLORS" to configure colors. So we can
+	specify not only colors for filetypes but also colors for filename
+	patterns.
+
+	If you don't have any LS_COLORS configuration, the repository probably
+	is very useful as the first step.
+	https://github.com/trapd00r/LS_COLORS
+
+Icon glysh~
+	Add an icon glyph as a filename prefix. This plugin references an
+	environment variable "$LS_ICONS" to configure icons.
+
+	An environment variable "$LS_ICONS" is not a standard, but it is very
+	similar to "$LS_COLORS" and has the same configuration capability.
+
+	For more detail, please see the repositry below.
+	https://github.com/a5ob7r/LS_ICONS
+
+Render tree branches~
+	Render tree branches, which are similar to 'tree(1)' or some UNIX
+	alternative's the '--tree' option.
+
+	The format is like below.
+>
+	    fern-renderer-lsflavor.vim/
+	  ├──  .git/
+	  ├──  autoload/
+	  ├──  doc/
+	  │  └──  fern-renderer-lsflavor.txt
+	  ├──  plugin/
+	  │  └──  fern_renderer_lsflavor.vim
+	  └──  README.md
+>
+==============================================================================
+USAGE
+>
+	let g:fern#renderer = 'lsflavor'
+>
+==============================================================================
+OPTIONS						*fern-renderer-lsflavor-options*
+
+*g:fern#renderer#lsflavor#branch#root*
+	A |String| used as a branch of the root node.
+
+	Default: ' '
+
+*g:fern#rendere#lsflavor#branch#init_node*
+	A |String| used as a rightmost branch symbol for init nodes among
+	sibling nodes.
+
+	Default: '├── '
+
+*g:fern#rendere#lsflavor#branch#last_node*
+	A |String| used as a rightmost branch symbol for the last node among
+	sibling nodes.
+
+	Default: '└── '
+
+*g:fern#rendere#lsflavor#branch#parent_init_node*
+	A |String| used as left branch symbols for the node's parent which is
+	one of the init nodes among sibling nodes.
+
+	Default: '│  '
+
+*g:fern#rendere#lsflavor#branch#parent_last_node*
+	A |String| used as left branch symbols for the node's parent which is
+	the last node among sibling nodes.
+
+	Default: '   '
+
+==============================================================================
+vim:tw=78:ts=8:noet:ft=help:norl:
