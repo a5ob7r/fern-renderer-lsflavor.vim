@@ -283,16 +283,17 @@ function! s:render_node(node, helper) abort
 
     let l:llabel = substitute(l:symlink, '^' . l:parent . '/', '', '')
 
-    return l:branch . '' . l:icon . ' ' . s:render_label(a:node.label, l:path) . a:node.badge . ' -> ' . s:render_label(l:llabel, l:symlink)
+    return printf('%s', l:branch) . l:icon . ' ' . s:render_label(a:node.label, l:path) . printf('%s', a:node.badge) . ' -> ' . s:render_label(l:llabel, l:symlink)
   else
-    return l:branch . '' . l:icon . ' ' . s:render_label(a:node.label, l:path) . a:node.badge
+    return printf('%s', l:branch) . l:icon . ' ' . s:render_label(a:node.label, l:path) . printf('%s', a:node.badge)
   endif
 endfunction
 
 function! s:syntax() abort
-  syntax match FernBranch /^.*\ze/ display
-  syntax match FernBranchSep // conceal display
+  syntax region FernBranch matchgroup=FernMarker start=/^/ end=// concealends keepend oneline display
   syntax match FernSymlinkArrow / -> / display
+
+  syntax region FernBadge matchgroup=FernMarker start=// end=// concealends keepend oneline display
 
   let l:params = fern#renderer#lsflavor#lscolor#syntax_parameters()
 
