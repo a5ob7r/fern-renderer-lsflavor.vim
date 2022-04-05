@@ -185,7 +185,7 @@ function! s:render_label(label, path) abort
       endif
     endfor
 
-    return a:label . l:indicator
+    return printf('[%sm%s[m', l:params.FILE, a:label) . l:indicator
   endif
 endfunction
 
@@ -297,6 +297,7 @@ function! s:syntax() abort
 
   let l:params = fern#renderer#lsflavor#lscolor#syntax_parameters()
 
+  execute printf('syntax region FernFile matchgroup=FernEscapeSequence start=/\[%sm/ end=/\[m/ concealends oneline display', l:params.FILE)
   execute printf('syntax region FernDirectory matchgroup=FernEscapeSequence start=/\[%sm/ end=/\[m/ concealends oneline display', l:params.DIR)
   execute printf('syntax region FernSymlink matchgroup=FernEscapeSequence start=/\[%sm/ end=/\[m/ concealends oneline display', l:params.LINK)
   execute printf('syntax region FernBlockDevice matchgroup=FernEscapeSequence start=/\[%sm/ end=/\[m/ concealends oneline display', l:params.BLK)
@@ -316,7 +317,9 @@ endfunction
 
 " :highlight helper.
 function! s:hl_helper(name, param) abort
-  let l:words = ['highlight', a:name]
+  " The "NONE" is applied by default if no other argument, otherwise it is
+  " probably ignored.
+  let l:words = ['highlight', 'default', a:name, 'NONE']
   let l:keys = ['cterm', 'ctermfg', 'ctermbg', 'ctermul', 'gui', 'guifg', 'guibg', 'guisp']
 
   for l:k in l:keys
@@ -336,6 +339,7 @@ function! s:highlight() abort
 
   let l:params = fern#renderer#lsflavor#lscolor#highlight_parameters()
 
+  execute s:hl_helper('FernFile', l:params.FILE)
   execute s:hl_helper('FernDirectory', l:params.DIR)
   execute s:hl_helper('FernSymlink', l:params.LINK)
   execute s:hl_helper('FernBlockDevice', l:params.BLK)
