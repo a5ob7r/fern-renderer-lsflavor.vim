@@ -57,11 +57,16 @@ function! s:sort_jobs(nodes, helper) abort
 
     let l:job = s:Promise.resolve(l:siblings)
           \.then({ nodes -> filter(nodes, printf("v:val._path !~# '%s' || v:val._path =~# '%s'", l:exclude, l:include)) })
-          \.then({ nodes -> sort(nodes, l:Comparator) })
+          \.then({ nodes -> s:max_node(nodes, l:Comparator) })
     let l:jobs += [l:job]
   endfor
 
   return l:jobs
+endfunction
+
+" A "max()" for fern node list. Return "v:null" if the list is empty.
+function! s:max_node(nodes, cmp) abort
+  return reduce(a:nodes, { acc, val -> acc isnot# v:null && a:cmp(acc, val) >= 0 ? acc : val }, v:null)
 endfunction
 
 function! s:is_last_node(node) dict abort
@@ -74,16 +79,16 @@ endfunction
 
 function! s:node_helper(nodes, helper) abort
   let l:jobs = s:sort_jobs(a:nodes, a:helper)
-  let [l:nss, l:e] = s:Promise.wait(s:Promise.all(l:jobs))
+  let [l:nodes, l:e] = s:Promise.wait(s:Promise.all(l:jobs))
 
   let l:memo = {}
 
-  for l:ns in l:nss
-    for l:n in l:ns
-      let l:memo[l:n._path] = v:false
-    endfor
+  for l:node in l:nodes
+    if l:node is# v:null
+      continue
+    endif
 
-    let l:memo[l:ns[-1]._path] = v:true
+    let l:memo[l:node._path] = v:true
   endfor
 
   return {
