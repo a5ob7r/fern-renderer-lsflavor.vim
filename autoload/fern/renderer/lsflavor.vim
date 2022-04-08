@@ -116,16 +116,29 @@ function! s:is_executable(path) abort
   return getfperm(a:path) =~# 'x'
 endfunction
 
-" "getftype()" with extra.
+" A "getftype()" with extras, especially for symlinks.
+"
+" 1. If the file path points symlink,
+"   a. Return 'cyclic' if it is a cyclic link.
+"   b. Return 'orphan' if it is a orphaned link.
+"   c. Return 'link' otherwise.
+" 2. If the file path doesn't exist, return "v:null".
+" 3. Fallback to "getftype()" otherwise.
 function! s:get_filetype(path) abort
   let l:ftype = getftype(a:path)
 
   if l:ftype ==# 'link'
     try
-      call resolve(a:path)
+      if empty(glob(resolve(a:path)))
+        return 'orphan'
+      else
+        return l:ftype
+      endif
     catch /^Vim\%((\a\+)\)\=:E655:/
-      return 'orphan'
+      return 'cyclic'
     endtry
+  elseif empty(l:ftype)
+    return v:null
   endif
 
   return l:ftype
@@ -137,7 +150,7 @@ function! s:filetype_indicator(path) abort
 
   if l:filetype ==# 'dir'
     return '/'
-  elseif index(['link', 'orphan'], l:filetype) >= 0
+  elseif index(['link', 'orphan', 'cyclic'], l:filetype) >= 0
     return '@'
   elseif l:filetype ==# 'socket'
     return '='
@@ -174,7 +187,7 @@ function! s:render_label(label, path) abort
     return printf('[%sm%s[m', l:params.SOCK, a:label) . l:indicator
   elseif l:ftype ==# 'fifo'
     return printf('[%sm%s[m', l:params.FIFO, a:label) . l:indicator
-  elseif l:ftype ==# 'orphan'
+  elseif index(['orphan', 'cyclic'], l:ftype) >= 0
     return printf('[%sm%s[m', l:params.ORPHAN, a:label) . l:indicator
   elseif s:is_executable(a:path)
     return printf('[%sm%s[m', l:params.EXEC, a:label) . l:indicator
@@ -266,13 +279,7 @@ function! s:render_node(node, helper) abort
   let l:icon = s:get_icon(l:path)
   let l:filetype = s:get_filetype(l:path)
 
-  if index(['link', 'orphan'], l:filetype) >= 0
-    if l:filetype ==# 'orphan'
-      let l:symlink = l:path
-    else
-      let l:symlink = resolve(l:path)
-    endif
-
+  if index(['link', 'orphan', 'cyclic'], l:filetype) >= 0
     let l:pnode = s:get_parent_node(a:node, a:helper.helper)
 
     if l:pnode is# v:null
@@ -281,7 +288,16 @@ function! s:render_node(node, helper) abort
       let l:parent = resolve(l:pnode._path)
     endif
 
-    let l:llabel = substitute(l:symlink, '^' . l:parent . '/', '', '')
+    if l:filetype ==# 'cyclic'
+      let l:symlink = l:path
+      let l:llabel = substitute(l:symlink, '^' . l:parent . '/', '', '')
+    elseif l:filetype ==# 'orphan'
+      let l:symlink = l:path
+      let l:llabel = substitute(resolve(l:path), '^' . l:parent . '/', '', '')
+    else
+      let l:symlink = resolve(l:path)
+      let l:llabel = substitute(l:symlink, '^' . l:parent . '/', '', '')
+    endif
 
     return printf('%s', l:branch) . l:icon . ' ' . s:render_label(a:node.label, l:path) . printf('%s', a:node.badge) . ' -> ' . s:render_label(l:llabel, l:symlink)
   else
