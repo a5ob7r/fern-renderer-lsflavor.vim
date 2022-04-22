@@ -10,6 +10,9 @@ call s:Config.config(expand('<sfile>:p'), {
       \ 'branch#parent_last_node': '   ',
       \ })
 
+call fern#renderer#lsflavor#lscolor#init()
+call fern#renderer#lsflavor#lsicon#init()
+
 function! fern#renderer#lsflavor#new() abort
   let l:default = fern#renderer#default#new()
 
