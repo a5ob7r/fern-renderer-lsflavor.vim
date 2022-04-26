@@ -12,7 +12,7 @@ FEATURES					*fern-renderer-lsflavor*
 
 Dereferenced symlink path~
 	Render the dereferenced filepath if a file is a symbolic link. This is
-	similar to a '-l' option of 'ls(1)' or the *netrw* view.
+	similar to a '-l' option of 'ls(1)' or the |netrw| view.
 
 	The format is like below.
 >
